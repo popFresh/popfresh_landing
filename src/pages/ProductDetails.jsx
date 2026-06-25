@@ -294,7 +294,7 @@ export default function ProductDetails() {
 
                 <div className="flex justify-between gap-4">
                   <span>FSSAI License</span>
-                  <span className="text-right break-all">=10725997000559</span>
+                  <span className="text-right break-all">10725997000559</span>
                 </div>
               </div>
 
