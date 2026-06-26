@@ -5,21 +5,22 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import PopFreshMarquee from "../components/PopFreshMarquee";
 
+
 // product gallery images import
-import Periperi1 from "../assets/products/periperi1.jpg";
-import Periperi2 from "../assets/products/periperi2.jpg";
+import Periperi1 from "../assets/products/periperi1.png";
+import Periperi2 from "../assets/products/periperi2.png";
 import Periperi3 from "../assets/products/periperi3.jpg";
 
-import Tomato1 from "../assets/products/tomato1.jpg";
-import Tomato2 from "../assets/products/tomato2.jpg";
+import Tomato1 from "../assets/products/tomato1.png";
+import Tomato2 from "../assets/products/tomato2.png";
 import Tomato3 from "../assets/products/tomato3.jpg";
 
-import Cheese1 from "../assets/products/cheese1.jpg";
-import Cheese2 from "../assets/products/cheese2.jpg";
+import Cheese1 from "../assets/products/cheese1.png";
+import Cheese2 from "../assets/products/cheese2.png";
 import Cheese3 from "../assets/products/cheese3.jpg";
 
-import Pudina1 from "../assets/products/pudina1.jpg";
-import Pudina2 from "../assets/products/pudina2.jpg";
+import Pudina1 from "../assets/products/pudina1.png";
+import Pudina2 from "../assets/products/pudina2.png";
 import Pudina3 from "../assets/products/pudina3.jpg";
 
 const products = {

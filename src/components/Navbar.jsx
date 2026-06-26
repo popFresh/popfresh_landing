@@ -10,10 +10,8 @@ export default function Navbar({ alwaysCapsule = false }) {
 
   const location = useLocation();
 
-  const isMobile = window.innerWidth < 768;
-
   useEffect(() => {
-    if (alwaysCapsule || isMobile) return;
+    if (alwaysCapsule) return;
 
     const handleScroll = () => {
       setScrolled(window.scrollY > 80);
@@ -24,7 +22,7 @@ export default function Navbar({ alwaysCapsule = false }) {
     return () => {
       window.removeEventListener("scroll", handleScroll);
     };
-  }, [alwaysCapsule, isMobile]);
+  }, [alwaysCapsule]);
 
   const links = [
     { name: "Home", path: "/" },
@@ -33,16 +31,35 @@ export default function Navbar({ alwaysCapsule = false }) {
     { name: "Contact", path: "/contact" },
   ];
 
-  const isCapsule = isMobile ? false : alwaysCapsule || scrolled;
+  const isCapsule = alwaysCapsule || scrolled;
 
   return (
-    <div className="relative md:fixed md:top-0 md:left-0 w-full md:z-50 px-0 md:px-6 lg:px-10 pt-0 md:pt-5">
+    <div
+      className={`
+        w-full
+        z-50
+        px-4
+        md:px-6
+        lg:px-10
+        pt-5
+
+        ${
+          location.pathname === "/"
+            ? "absolute top-0 left-0 md:fixed"
+            : "relative md:fixed md:top-0 md:left-0"
+        }
+      `}
+    >
       <motion.nav
         initial={false}
         animate={{
-          width: isMobile ? "100%" : isCapsule ? "75%" : "100%",
-          borderRadius: isMobile ? "0px" : isCapsule ? "9999px" : "0px",
-          y: isMobile ? 0 : isCapsule ? 10 : 0,
+          width: isCapsule
+            ? window.innerWidth < 768
+              ? "100%"
+              : "75%"
+            : "100%",
+          borderRadius: isCapsule ? "9999px" : "0px",
+          y: isCapsule ? 10 : 0,
         }}
         transition={{
           duration: 0.3,
@@ -50,28 +67,18 @@ export default function Navbar({ alwaysCapsule = false }) {
         }}
         className={`
           mx-auto
+          px-5 md:px-8 lg:px-10
           ${
-            isMobile
+            isCapsule
               ? `
-                  py-3
-                  px-5
-                  bg-[#174C35]
-                `
-              : `
-                  px-5 md:px-8 lg:px-10
-                  ${
-                    isCapsule
-                      ? `
-                        py-3
-                        bg-[#174C35]/60
-                        backdrop-blur-xl
-                        border
-                        border-[#E4C06A]/15
-                        shadow-[0_10px_40px_rgba(0,0,0,0.20)]
-                      `
-                      : "py-4 bg-transparent"
-                  }
-                `
+                py-3
+                bg-[#174C35]/60
+                backdrop-blur-xl
+                border
+                border-[#E4C06A]/15
+                shadow-[0_10px_40px_rgba(0,0,0,0.20)]
+              `
+              : "py-4 bg-transparent"
           }
         `}
       >
@@ -84,7 +91,7 @@ export default function Navbar({ alwaysCapsule = false }) {
               alt="Pop Fresh"
               initial={false}
               animate={{
-                height: isMobile ? 60 : isCapsule ? 55 : 100,
+                height: isCapsule ? 55 : 100,
               }}
               transition={{
                 duration: 0.3,
@@ -143,7 +150,7 @@ export default function Navbar({ alwaysCapsule = false }) {
 
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="
+            className={`
               md:hidden
               flex
               items-center
@@ -151,8 +158,8 @@ export default function Navbar({ alwaysCapsule = false }) {
               w-11
               h-11
               rounded-full
-              text-white
-            "
+              ${isCapsule ? "text-white" : "text-white"}
+            `}
           >
             {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
@@ -181,6 +188,8 @@ export default function Navbar({ alwaysCapsule = false }) {
             }}
             className="
               md:hidden
+              mt-4
+              rounded-[28px]
               bg-[#174C35]/90
               backdrop-blur-xl
               border
@@ -213,6 +222,9 @@ export default function Navbar({ alwaysCapsule = false }) {
     </div>
   );
 }
+
+
+
 
 //////FROM HERE WORKED 1
 

@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import ScrollToTop from "./components/ScrollToTop";
+import ScrollToTopButton from "./components/ScrollToTopButton";
 
 import Home from "./pages/Home";
 import Products from "./pages/Products";
@@ -38,8 +39,11 @@ export default function App() {
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
 
         <Route path="/terms-of-service" element={<TermsOfService />} />
-        
+
       </Routes>
+
+       <ScrollToTopButton />
+
     </BrowserRouter>
   );
 }
