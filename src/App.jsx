@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 
 import ScrollToTop from "./components/ScrollToTop";
 import ScrollToTopButton from "./components/ScrollToTopButton";
@@ -13,10 +13,13 @@ import ShippingPolicy from "./pages/ShippingPolicy";
 import FAQs from "./pages/Faq";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
+import Cart from "./pages/Cart/Cart";
+import Shipping from "./pages/Checkout/Shipping";
+import FloatingCartButton from "./components/FloatingCartButton";
 
-export default function App() {
+  export default function App() {
   return (
-    <BrowserRouter>
+    <>
       <ScrollToTop />
 
       <Routes>
@@ -26,24 +29,40 @@ export default function App() {
 
         <Route path="/products/:slug" element={<ProductDetails />} />
 
+        <Route path="/cart" element={<Cart />} />
+
+        <Route path="/checkout/shipping" element={<Shipping />} />
+
         <Route path="/about" element={<About />} />
 
         <Route path="/contact" element={<Contact />} />
 
-        <Route path="/return-refund-policy" element={<ReturnRefundPolicy />} />
+        <Route
+          path="/return-refund-policy"
+          element={<ReturnRefundPolicy />}
+        />
 
-        <Route path="/shipping-policy" element={<ShippingPolicy />} />
+        <Route
+          path="/shipping-policy"
+          element={<ShippingPolicy />}
+        />
 
         <Route path="/faq" element={<FAQs />} />
 
-        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route
+          path="/privacy-policy"
+          element={<PrivacyPolicy />}
+        />
 
-        <Route path="/terms-of-service" element={<TermsOfService />} />
-
+        <Route
+          path="/terms-of-service"
+          element={<TermsOfService />}
+        />
       </Routes>
 
-       <ScrollToTopButton />
-
-    </BrowserRouter>
+      <FloatingCartButton />
+      
+      <ScrollToTopButton />
+    </>
   );
 }
