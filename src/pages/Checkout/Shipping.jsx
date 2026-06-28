@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-
+import { createOrder,verifyPayment } from "../../api/checkout.api.js";
+import { toast } from "react-toastify";
 
 import {
   ArrowLeft,
@@ -15,6 +16,7 @@ import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 
 import { useCart } from "../../context/CartContext";
+import CartItem from "../../components/CartItem.jsx";
 
 export default function Shipping() {
   const navigate = useNavigate();
@@ -24,6 +26,7 @@ export default function Shipping() {
     subtotal,
     shipping,
     total,
+    clearCart
   } = useCart();
 
   const [loadingPincode, setLoadingPincode] =
@@ -37,6 +40,9 @@ export default function Shipping() {
 
 const [availablePostOffices, setAvailablePostOffices] = 
     useState([]);
+
+    const [paymentLoading, setPaymentLoading] =
+  useState(false);
 
   const [form, setForm] = useState(() => {
     const saved = localStorage.getItem(
@@ -163,6 +169,308 @@ setForm((prev) => ({
       fetchPincode(newValue);
     }
   };
+
+  const loadRazorpayScript = () => {
+
+  return new Promise((resolve) => {
+
+    if (window.Razorpay) {
+      resolve(true);
+      return;
+    }
+
+    const script = document.createElement("script");
+
+    script.src =
+      "https://checkout.razorpay.com/v1/checkout.js";
+
+    script.onload = () => resolve(true);
+
+    script.onerror = () => resolve(false);
+
+    document.body.appendChild(script);
+
+  });
+
+};
+
+
+const handlePayment = async () => {
+    setPaymentLoading(true);
+
+
+    
+        // -----------------------------
+  // Validate Shipping
+  // -----------------------------
+
+  if (!validatePhone(form.phone)) {
+
+    toast.error("Please enter a valid phone number.");
+
+    setPaymentLoading(false);
+
+    return;
+
+  }
+
+  if (!validateEmail(form.email)) {
+
+    toast.error("Please enter a valid email.");
+
+    setPaymentLoading(false);
+
+    return;
+
+  }
+
+  if (
+    form.pincode.length !== 6 ||
+    !deliveryAvailable
+  ) {
+
+    toast.error("Please enter a valid pincode.");
+
+    setPaymentLoading(false);
+
+    return;
+
+  }
+
+  // -----------------------------
+  // Load Razorpay JS
+  // -----------------------------
+
+  const loaded =
+    await loadRazorpayScript();
+
+  if (!loaded) {
+
+    toast.error("Unable to load Razorpay.");
+
+    setPaymentLoading(false);
+
+    return;
+
+  }
+
+  // -----------------------------
+  // Create Razorpay Order
+  // -----------------------------
+let order;
+try{
+
+    order = await createOrder({
+
+  amount: total,
+
+  currency: "INR",
+
+  cartItems: cart,
+
+  subtotal,
+
+  shippingCharge: shipping,
+
+  total,
+
+});
+
+    }
+
+  
+catch (err) {
+
+    toast.error(
+
+      err.response?.data?.message ||
+
+      "Something went wrong."
+
+    );
+
+    setPaymentLoading(false);
+
+    return;
+
+}
+
+  console.log(order);
+
+  // -----------------------------
+  // Razorpay Checkout
+  // -----------------------------
+
+  const options = {
+
+    key:
+      import.meta.env.VITE_RAZORPAY_KEY_ID,
+
+    amount:
+      order.amount,
+
+    currency:
+      order.currency,
+
+    order_id:
+      order.id,
+
+    name:
+      "POPFRESH",
+
+    description:
+      "Healthy Snacks",
+
+    image:
+      "https://res.cloudinary.com/diksf0ddl/image/upload/v1782548064/pop_logo_color_sxqhil.png",
+
+    prefill: {
+
+      name:
+        form.fullName,
+
+      email:
+        form.email,
+
+      contact:
+        form.phone,
+
+    },
+
+    notes: {
+
+      address:
+        form.address,
+
+    },
+
+    theme: {
+
+      color:
+        "#174C35",
+
+    },
+
+// handler: async (response) => {
+
+//    const verify = await verifyPayment(response);
+
+// console.log(verify);
+
+//     console.log(verify.data);
+
+// },
+
+handler: async (response) => {
+
+  const payload = {
+
+  ...response,
+
+  customer: {
+
+    name: form.fullName,
+
+    email: form.email,
+
+    phone: form.phone,
+
+  },
+
+  address: {
+
+    fullName: form.fullName,
+
+    phone: form.phone,
+
+    addressLine1: form.address,
+
+    addressLine2: form.address2 || "",
+
+    city: form.city,
+
+    state: form.state,
+
+    pincode: form.pincode,
+
+    landmark: form.landmark || "",
+
+  },
+
+  cartItems: cart,
+
+  subtotal,
+
+  shippingCharge: shipping,
+
+  total,
+
+};
+
+try{
+    const result = await verifyPayment(payload);
+    setPaymentLoading(false);
+    clearCart();
+    navigate("/order-success", {
+
+      state: result,
+
+      replace: true,
+
+    });
+
+
+}catch (err) {
+
+    setPaymentLoading(false);
+    console.error(err);
+    toast.error(
+
+      err.response?.data?.message ||
+
+      "Payment verification failed."
+
+    );
+
+}
+
+
+},
+
+  
+    modal: {
+
+      ondismiss() {
+
+        setPaymentLoading(false);
+
+        console.log(
+          "Payment Cancelled"
+        );
+
+      },
+
+    },
+
+  };
+
+  try{
+     const razorpay =
+    new window.Razorpay(options);
+
+  razorpay.open();
+
+  }catch (err) {
+
+  setPaymentLoading(false);
+
+  toast.error("Unable to open payment gateway.");
+
+}
+ 
+  };
+
+
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -1119,10 +1427,11 @@ District
               </Link>
 
               <button
-                type="submit"
-                form=""
-                onClick={handleSubmit}
-                className="
+                type="button"
+                disabled={paymentLoading}
+                //onClick={handleSubmit}
+                onClick={handlePayment}
+                className={`
                   flex
                   w-full
 
@@ -1132,7 +1441,7 @@ District
 
                   rounded-full
 
-                  bg-[#174C35]
+                  
 
                   py-4
 
@@ -1142,13 +1451,49 @@ District
 
                   transition-all
                   duration-300
+                  ${
+    paymentLoading
+      ? "bg-[#174C35]/70 cursor-not-allowed"
+      : "bg-[#174C35] hover:bg-[#123A2B]"
+  }
+`}
 
-                  hover:bg-[#123A2B]
-                "
+                  
+                
               >
-                Continue to Payment
+                {paymentLoading ? (
 
-                <ArrowRight size={18} />
+  <>
+
+    <div
+      className="
+        h-5
+        w-5
+        rounded-full
+        border-2
+        border-white/30
+        border-t-white
+        animate-spin
+      "
+    />
+
+    Processing...
+
+  </>
+
+) : (
+
+  <>
+
+    Proceed to Pay
+
+    <ArrowRight size={18} />
+
+  </>
+
+)}
+
+               
               </button>
 
             </div>

@@ -2,14 +2,118 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { getProducts } from "../api/product.api";
 
 import ProductCTA from "../components/ProductCTA";
 
 import ProductImageSlider from "../components/ProductImageSlider";
 
-import productData from "../components/data/productData.js";
+
+const CARD_THEMES = {
+
+  GREEN: {
+    background: "#EAF4EB",
+    accent: "#3E8C57",
+    text: "#184C35",
+  },
+
+  ORANGE: {
+    background: "#F8E6DF",
+    accent: "#E86A30",
+    text: "#184C35",
+  },
+
+  RED: {
+    background: "#FBE6E2",
+    accent: "#D94E43",
+    text: "#184C35",
+  },
+
+  PURPLE: {
+    background: "#F3ECFD",
+    accent: "#7C3AED",
+    text: "#184C35",
+  },
+
+  CREAM: {
+    background: "#FBF3DE",
+    accent: "#D7A326",
+    text: "#184C35",
+  },
+
+};
+
 
 export default function Products() {
+   const [products, setProducts] = useState([]);
+   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+
+    const fetchProducts = async () => {
+
+      try {
+        setLoading(true);
+
+        const data = await getProducts();
+
+
+        data.sort(
+  (a, b) =>
+    a.displayOrder - b.displayOrder
+);
+
+        const mapped = data.map((product) => ({
+
+          ...product,
+
+          title: product.name,
+
+          sellingPrice: Number(
+            product.discountPrice || product.price
+          ),
+
+          mrp: Number(product.price),
+
+          shortDescription:
+            product.description,
+
+          images:
+            product.images.map(
+              (img) => img.imageUrl
+            ),
+
+          
+          highlights: product.highlights || [],
+
+badge: product.badge,
+
+theme:
+  CARD_THEMES[
+    product.cardTheme
+  ] || CARD_THEMES.GREEN,
+
+        }));
+
+        setProducts(mapped);
+
+      } catch (err) {
+
+        console.error(err);
+
+      }
+       finally {
+
+    setLoading(false);
+
+  }
+
+    };
+
+    fetchProducts();
+
+  }, []);
   return (
     <>
       <Navbar alwaysCapsule />
@@ -53,10 +157,39 @@ export default function Products() {
             </p>
           </div>
 
-          {/* Products Grid */}
+    {loading ? (
 
-          <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-8 mt-20">
-            {productData.map((product) => (
+  <div className="flex flex-col items-center py-28">
+
+  <div className="flex gap-3">
+
+    <span className="h-4 w-4 rounded-full bg-[#184C35] animate-bounce" />
+
+    <span
+      className="h-4 w-4 rounded-full bg-[#3E8C57] animate-bounce"
+      style={{ animationDelay: "150ms" }}
+    />
+
+    <span
+      className="h-4 w-4 rounded-full bg-[#D7A326] animate-bounce"
+      style={{ animationDelay: "300ms" }}
+    />
+
+  </div>
+
+  <p className="mt-8 text-[#184C35] uppercase tracking-[0.2em] text-sm">
+
+    Preparing your snacks...
+
+  </p>
+
+</div>
+
+) : (
+
+  <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-8 mt-20">
+
+    {/* Products Grid */}            {products.map((product) => (
               <Link
                 key={product.id}
                 to={`/products/${product.slug}`}
@@ -93,7 +226,7 @@ export default function Products() {
                       background: product.theme.accent,
                     }}
                   >
-                    {product.theme.badge}
+                    {product.badge || "POPFRESH"}
                   </span>
                 </div>
 
@@ -142,9 +275,9 @@ export default function Products() {
                   </p>
 
                                     {/* Highlights */}
-
+                  {product.highlights?.length > 0 && (
                   <div className="flex flex-wrap gap-2 mt-5">
-                    {product.tags.map((tag) => (
+                    {product.highlights?.map((tag) => (
                       <span
                         key={tag}
                         className="
@@ -160,14 +293,14 @@ export default function Products() {
                       </span>
                     ))}
                   </div>
-
+)}
                   {/* Price */}
 
                   <div className="mt-6 flex items-center gap-3">
                     <span
                       className="text-3xl font-bold"
                       style={{
-                        color: product.theme.text,
+                        color: "#184C35",
                       }}
                     >
                       ₹{product.sellingPrice}
@@ -216,6 +349,8 @@ export default function Products() {
               </Link>
             ))}
           </div>
+          
+)}
         </div>
       </main>
 
@@ -227,6 +362,237 @@ export default function Products() {
     </>
   );
 }
+
+
+// import Navbar from "../components/Navbar";
+// import Footer from "../components/Footer";
+// import { ArrowRight } from "lucide-react";
+// import { Link } from "react-router-dom";
+
+// import ProductCTA from "../components/ProductCTA";
+
+// import ProductImageSlider from "../components/ProductImageSlider";
+
+// import productData from "../components/data/productData.js";
+
+// export default function Products() {
+//   return (
+//     <>
+//       <Navbar alwaysCapsule />
+
+//       <main className="bg-[#F6F3EC] min-h-screen pt-40 pb-24">
+//         <div className="max-w-7xl mx-auto px-6">
+//           {/* Hero */}
+
+//           <div className="text-center">
+//             <span
+//               className="
+//                 inline-flex
+//                 px-5
+//                 py-2
+//                 rounded-full
+//                 bg-[#E9E3D8]
+//                 text-[#184C35]
+//                 text-xs
+//                 tracking-[0.18em]
+//                 font-medium
+//               "
+//             >
+//               OUR PRODUCTS
+//             </span>
+
+//             <h1
+//               className="
+//                 mt-6
+//                 text-[#184C35]
+//                 text-5xl
+//                 md:text-7xl
+//               "
+//               style={{ fontFamily: "Fraunces, serif" }}
+//             >
+//               Explore Every Crunch
+//             </h1>
+
+//             <p className="mt-6 max-w-2xl mx-auto text-[#667085] text-lg leading-8">
+//               Crafted from premium fox nuts and roasted to perfection.
+//               Discover bold flavours made for guilt-free snacking.
+//             </p>
+//           </div>
+
+//           {/* Products Grid */}
+
+//           <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-8 mt-20">
+//             {productData.map((product) => (
+//               <Link
+//                 key={product.id}
+//                 to={`/products/${product.slug}`}
+//                 className="
+//                   group
+//                   flex
+//                   flex-col
+//                   overflow-hidden
+//                   rounded-[32px]
+//                   transition-all
+//                   duration-300
+//                   hover:-translate-y-2
+//                   hover:shadow-[0_20px_50px_rgba(0,0,0,0.08)]
+//                 "
+//                 style={{
+//                   background: product.theme.background,
+//                 }}
+//               >
+//                 {/* Badge */}
+
+//                 <div className="p-6 pb-0">
+//                   <span
+//                     className="
+//                       inline-flex
+//                       px-4
+//                       py-2
+//                       rounded-full
+//                       text-white
+//                       text-[11px]
+//                       tracking-[0.15em]
+//                       font-medium
+//                     "
+//                     style={{
+//                       background: product.theme.accent,
+//                     }}
+//                   >
+//                     {product.theme.badge}
+//                   </span>
+//                 </div>
+
+//                 {/* Image */}
+
+//                 <div className="px-6 pt-6">
+//                   <div
+//                     className="
+//                       overflow-hidden
+//                       rounded-[24px]
+//                       bg-white/40
+//                     "
+//                   >
+//                     <ProductImageSlider
+//                       images={product.images}
+//                       title={product.title}
+//                     />
+//                   </div>
+//                 </div>
+
+//                 {/* Content */}
+
+//                 <div className="flex flex-col flex-1 p-6">
+//                   <h3
+//                     className="
+//                       text-[#184C35]
+//                       text-2xl
+//                       leading-tight
+//                     "
+//                     style={{
+//                       fontFamily: "Fraunces, serif",
+//                     }}
+//                   >
+//                     {product.title}
+//                   </h3>
+
+//                   <p
+//                     className="
+//                       mt-4
+//                       text-[#667085]
+//                       leading-7
+//                       flex-1
+//                     "
+//                   >
+//                     {product.shortDescription}
+//                   </p>
+
+//                                     {/* Highlights */}
+
+//                   <div className="flex flex-wrap gap-2 mt-5">
+//                     {product.tags.map((tag) => (
+//                       <span
+//                         key={tag}
+//                         className="
+//                           px-3
+//                           py-1
+//                           rounded-full
+//                           bg-white
+//                           text-sm
+//                           text-[#184C35]
+//                         "
+//                       >
+//                         {tag}
+//                       </span>
+//                     ))}
+//                   </div>
+
+//                   {/* Price */}
+
+//                   <div className="mt-6 flex items-center gap-3">
+//                     <span
+//                       className="text-3xl font-bold"
+//                       style={{
+//                         color: product.theme.text,
+//                       }}
+//                     >
+//                       ₹{product.sellingPrice}
+//                     </span>
+
+//                     <span className="text-lg text-gray-400 line-through">
+//                       ₹{product.mrp}
+//                     </span>
+//                   </div>
+
+//                   {/* CTA */}
+
+//                   <button
+//                     className="
+//                       group
+//                       mt-8
+//                       w-full
+//                       inline-flex
+//                       items-center
+//                       justify-center
+//                       gap-3
+//                       py-4
+//                       rounded-full
+//                       text-white
+//                       font-semibold
+//                       transition-all
+//                       duration-300
+//                       hover:shadow-lg
+//                     "
+//                     style={{
+//                       background: product.theme.accent,
+//                     }}
+//                   >
+//                     Buy Now
+
+//                     <ArrowRight
+//                       size={18}
+//                       className="
+//                         transition-transform
+//                         duration-300
+//                         group-hover:translate-x-1
+//                       "
+//                     />
+//                   </button>
+//                 </div>
+//               </Link>
+//             ))}
+//           </div>
+//         </div>
+//       </main>
+
+//       <ProductCTA />
+
+      
+
+//       <Footer />
+//     </>
+//   );
+// }
 
 // import Navbar from "../components/Navbar";
 // import Footer from "../components/Footer";

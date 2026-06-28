@@ -16,6 +16,7 @@ import TermsOfService from "./pages/TermsOfService";
 import Cart from "./pages/Cart/Cart";
 import Shipping from "./pages/Checkout/Shipping";
 import FloatingCartButton from "./components/FloatingCartButton";
+import OrderSuccess from "./pages/Checkout/Success";
 
   export default function App() {
   return (
@@ -58,10 +59,18 @@ import FloatingCartButton from "./components/FloatingCartButton";
           path="/terms-of-service"
           element={<TermsOfService />}
         />
+
+      <Route
+        path="/order-success"
+        element={<OrderSuccess/>} 
+        />
+
+
       </Routes>
 
-      <FloatingCartButton />
       
+      <FloatingCartButton />
+
       <ScrollToTopButton />
     </>
   );

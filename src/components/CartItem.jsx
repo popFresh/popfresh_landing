@@ -4,7 +4,9 @@ export default function CartItem({
   item,
   updateQuantity,
   removeFromCart,
-}) {
+}) 
+    
+{
   return (
     <div
       className="
