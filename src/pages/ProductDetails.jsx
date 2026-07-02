@@ -153,14 +153,17 @@ setRelatedProducts(related);
 
   } catch (err) {
 
-    console.error(err);
+  console.error(err);
 
-  } finally {
+  navigate("/products", {
+    replace: true,
+  });
 
-    setLoading(false);
+} finally {
 
-  }
+  setLoading(false);
 
+}
 };
 
 
@@ -265,6 +268,7 @@ const discount = Math.round(
       100
   );
 
+const outOfStock = product.stock <= 0;
 
   const reviews = [
     {
@@ -477,6 +481,25 @@ const discount = Math.round(
         </span>
       </div>
 
+      {outOfStock && (
+  <div className="mt-4">
+    <span
+      className="
+        inline-flex
+        rounded-full
+        bg-red-600
+        px-4
+        py-2
+        text-sm
+        font-semibold
+        text-white
+      "
+    >
+      OUT OF STOCK
+    </span>
+  </div>
+)}
+
       {/* Product Title */}
 
       <h1
@@ -647,6 +670,7 @@ const discount = Math.round(
           quantity={quantity}
           setQuantity={setQuantity}
           max={product.stock}
+          disabled={outOfStock}
         />
       </div>
 
@@ -656,35 +680,36 @@ const discount = Math.round(
         {/* Add To Cart */}
 
         <button
-          onClick={() => {
-            addToCart(product, quantity);
+  disabled={outOfStock}
+  onClick={() => {
 
-            // Drawer will open after Navbar integration
-          }}
-          className="
-            flex
-            items-center
-            justify-center
-            gap-3
+    if (outOfStock) return;
 
-            rounded-full
+    addToCart(product, quantity);
 
-            py-4
+  }}
+          className={`
+  flex
+  items-center
+  justify-center
+  gap-3
+  rounded-full
+  py-4
+  font-semibold
+  transition-all
+  duration-300
 
-            font-semibold
-
-            text-white
-
-            transition-all
-            duration-300
-
-            hover:scale-[1.02]
-            hover:opacity-90
-            hover:shadow-xl
-          "
-          style={{
-            background: product.theme.accent,
-          }}
+  ${
+    outOfStock
+      ? "bg-gray-400 text-white cursor-not-allowed"
+      : "text-white hover:scale-[1.02] hover:opacity-90 hover:shadow-xl"
+  }
+`}
+          style={
+  !outOfStock
+    ? { background: product.theme.accent }
+    : {}
+}
         >
           <ShoppingCart size={20} />
 
@@ -695,32 +720,33 @@ const discount = Math.round(
 
         <button
           onClick={() => {
-            buyNow(product, quantity);
 
-            navigate("/checkout/shipping");
-          }}
-          className="
-            flex
-            items-center
-            justify-center
-            gap-3
+    if (outOfStock) return;
 
-            rounded-full
+    buyNow(product, quantity);
 
-            py-4
-            border-2
-            border-[#174C35]
-text-[#174C35]
+    navigate("/checkout/shipping");
 
-            font-semibold
+}}
+disabled={outOfStock}
+          className={`
+  flex
+  items-center
+  justify-center
+  gap-3
+  rounded-full
+  py-4
+  border-2
+  font-semibold
+  transition-all
+  duration-300
 
-            transition-all
-            duration-300
-
-            hover:bg-[#174C35]
-            hover:text-white
-          "
-          
+  ${
+    outOfStock
+      ? "cursor-not-allowed border-gray-300 bg-gray-100 text-gray-500"
+      : "border-[#174C35] text-[#174C35] hover:bg-[#174C35] hover:text-white"
+  }
+`}          
         >
           <CreditCard size={20} />
 
@@ -805,29 +831,33 @@ text-[#174C35]
 
     {relatedProducts.map((item) => (
 
-      <Link
-        key={item.id}
-        to={`/products/${item.slug}`}
+    <Link
+  key={item.id}
+  to={item.stock > 0 ? `/products/${item.slug}` : "#"}
+  onClick={(e) => {
+    if (item.stock <= 0) {
+      e.preventDefault();
+    }
+  }}
+  className={`
+    group
+    flex
+    flex-col
+    overflow-hidden
+    rounded-[32px]
+    transition-all
+    duration-300
 
-        className="
-          group
-          flex
-          flex-col
-
-          overflow-hidden
-
-          rounded-[32px]
-
-          transition-all
-          duration-300
-
-          hover:-translate-y-2
-          hover:shadow-[0_20px_50px_rgba(0,0,0,0.08)]
-        "
-        style={{
-          background: item.theme.background,
-        }}
-      >
+    ${
+      item.stock > 0
+        ? "hover:-translate-y-2 hover:shadow-[0_20px_50px_rgba(0,0,0,0.08)]"
+        : "cursor-not-allowed opacity-90"
+    }
+  `}
+  style={{
+    background: item.theme.background,
+  }}
+>
 
         {/* Badge */}
 
@@ -872,11 +902,20 @@ text-[#174C35]
               bg-white/40
             "
           >
-
+            <div className="relative overflow-hidden rounded-[24px] bg-white/40">
             <ProductImageSlider
               images={item.images}
               title={item.title}
             />
+             {item.stock <= 0 && (
+    <div className="absolute inset-0 flex items-center justify-center bg-black/45 backdrop-blur-sm">
+      <span className="rounded-full bg-red-600 px-5 py-2 text-sm font-bold text-white">
+        OUT OF STOCK
+      </span>
+    </div>
+  )}
+
+</div>
 
           </div>
 
@@ -965,28 +1004,30 @@ text-[#174C35]
           {/* CTA */}
 
           <button
-            className="
-              mt-7
+  disabled={item.stock <= 0}
+  className={`
+    mt-7
+    w-full
+    rounded-full
+    py-4
+    font-semibold
+    transition-all
+    duration-300
 
-              w-full
-
-              rounded-full
-
-              py-4
-
-              text-white
-
-              font-semibold
-
-              transition-all
-              duration-300
-            "
-            style={{
-              background: item.theme.accent,
-            }}
-          >
-            View Product
-          </button>
+    ${
+      item.stock <= 0
+        ? "bg-gray-400 text-white cursor-not-allowed"
+        : "text-white"
+    }
+  `}
+  style={
+    item.stock > 0
+      ? { background: item.theme.accent }
+      : {}
+  }
+>
+  {item.stock > 0 ? "View Product" : "Out of Stock"}
+</button>
 
         </div>
 

@@ -15,3 +15,11 @@ export const getProductBySlug = async (slug) => {
   return data.data;
 
 };
+
+export const getProductById = async (id) => {
+
+  const { data } = await api.get(`/products/public/${id}`);
+
+  return data.data;
+
+};

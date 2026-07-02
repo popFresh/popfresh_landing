@@ -4,8 +4,12 @@ import {
   X,
   ArrowRight,
 } from "lucide-react";
-import { Link } from "react-router-dom";
 
+import { useEffect } from "react";
+import { getProductById } from "../api/product.api";
+import { toast } from "react-toastify";
+
+import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 
 import CartItem from "./CartItem";
@@ -15,17 +19,69 @@ export default function CartDrawer({
   open,
   onClose,
 }) {
-  const {
-    cart,
-    totalItems,
-    subtotal,
-    shipping,
-    total,
 
-    updateQuantity,
-    removeFromCart,
-  } = useCart();
+    const navigate = useNavigate();
 
+    const validateCart = async () => {
+
+  for (const item of cart) {
+
+    try {
+
+      const product = await getProductById(item.id);
+
+      if (!product.isActive) {
+
+        removeFromCart(item.id);
+
+        toast.info(
+          `${product.name} has been removed from your cart because it is no longer available.`
+        );
+
+        return false;
+
+      }
+
+      if (product.stock <= 0) {
+
+        removeFromCart(item.id);
+
+        toast.info(
+          `${product.name} has been removed from your cart because it is out of stock.`
+        );
+
+        return false;
+
+      }
+
+    } catch (err) {
+
+      removeFromCart(item.id);
+
+      toast.info(
+        `${item.name} has been removed from your cart because it is no longer available.`
+      );
+
+      return false;
+
+    }
+
+  }
+
+  return true;
+
+};
+
+const {
+  cart,
+  totalItems,
+
+  pricing,
+  pricingLoading,
+
+  updateQuantity,
+  removeFromCart,
+} = useCart();
   return (
     <AnimatePresence>
       {open && (
@@ -251,17 +307,9 @@ export default function CartDrawer({
 
                   {/* Coupon */}
 
-                  <CouponBox
-                    appliedCoupon={null}
-                    discount={0}
-                    onApplyCoupon={(code) => {
-                      // Backend integration later
-                      console.log(code);
+                  <CouponBox />
 
-                      return false;
-                    }}
-                  />
-                </div>
+                 </div>
 
                 {/* Footer */}
 
@@ -286,7 +334,7 @@ export default function CartDrawer({
                     </span>
 
                     <span className="font-semibold text-[#174C35]">
-                      ₹{subtotal}
+                      ₹{pricing.subtotal}
                     </span>
                   </div>
 
@@ -297,72 +345,149 @@ export default function CartDrawer({
                       Shipping
                     </span>
 
-                    <span className="font-semibold text-[#174C35]">
-                      {shipping === 0
-                        ? "FREE"
-                        : `₹${shipping}`}
-                    </span>
+                    <span
+  className={`font-semibold ${
+    !pricingLoading && pricing.shipping === 0
+      ? "text-green-600"
+      : "text-[#174C35]"
+  }`}
+>
+  {pricingLoading
+    ? "Calculating..."
+    : pricing.shipping === 0
+    ? "FREE"
+    : `₹${pricing.shipping}`}
+</span>
                   </div>
 
                   {/* Divider */}
 
-                  <div className="border-t border-dashed border-[#E5E5E5]" />
+                  
 
                   {/* Total */}
 
-                  <div className="flex justify-between items-center">
-                    <span
-                      className="text-xl text-[#174C35]"
-                      style={{
-                        fontFamily: "Fraunces, serif",
-                      }}
-                    >
-                      Total
-                    </span>
+                  {/* Discount */}
 
-                    <span
-                      className="text-2xl font-bold"
-                      style={{
-                        color: "#174C35",
-                      }}
-                    >
-                      ₹{total}
-                    </span>
-                  </div>
+{!pricingLoading && pricing.discount > 0 && (
+  <div className="flex justify-between">
+    <span className="text-[#667085]">
+      Discount
+    </span>
+
+    <span className="font-semibold text-green-600">
+      -₹{pricing.discount}
+    </span>
+  </div>
+)}
+
+{/* Divider */}
+
+<div className="border-t border-dashed border-[#E5E5E5]" />
+
+{/* Total */}
+
+<div className="flex justify-between items-center">
+
+  <span
+    className="text-xl text-[#174C35]"
+    style={{
+      fontFamily: "Fraunces, serif",
+    }}
+  >
+    Total
+  </span>
+
+  <span
+    className="text-2xl font-bold"
+    style={{
+      color: "#174C35",
+    }}
+  >
+    {pricingLoading
+      ? "Calculating..."
+      : `₹${pricing.total}`}
+  </span>
+
+</div>
                                     {/* Buttons */}
 
                   <div className="pt-2 space-y-3">
-                    <Link
-                      to="/checkout/shipping"
-                      onClick={onClose}
-                      className="
-                        w-full
-                        flex
-                        items-center
-                        justify-center
-                        gap-3
+                    {/* <Link
+  to="/checkout/shipping"
+  onClick={(e) => {
+    if (pricingLoading) {
+      e.preventDefault();
+    } else {
+      onClose();
+    }
+  }}
+  className={`
+    w-full
+    flex
+    items-center
+    justify-center
+    gap-3
+    rounded-full
+    py-4
+    font-semibold
+    transition-all
+    duration-300
 
-                        rounded-full
+    ${
+      pricingLoading
+        ? "pointer-events-none bg-gray-400 cursor-not-allowed"
+        : "bg-[#174C35] hover:bg-[#123826] hover:shadow-lg text-white"
+    }
+  `}
+>
+  {pricingLoading
+    ? "Calculating..."
+    : "Proceed to Shipping"}
 
-                        bg-[#174C35]
+  {!pricingLoading && (
+    <ArrowRight size={18} />
+  )}
+</Link> */}
+<button
+  disabled={pricingLoading}
+  onClick={async () => {
 
-                        py-4
+  const valid = await validateCart();
 
-                        text-white
+  if (!valid) return;
 
-                        font-semibold
+  onClose();
 
-                        transition-all
-                        duration-300
+  navigate("/checkout/shipping");
 
-                        hover:bg-[#123826]
-                        hover:shadow-lg
-                      "
-                    >
-                      Proceed to Shipping
+}}
+  className={`
+    w-full
+    flex
+    items-center
+    justify-center
+    gap-3
+    rounded-full
+    py-4
+    font-semibold
+    transition-all
+    duration-300
 
-                      <ArrowRight size={18} />
-                    </Link>
+    ${
+      pricingLoading
+  ? "bg-gray-400 text-white cursor-not-allowed opacity-70"
+  : "bg-[#174C35] text-white hover:bg-[#123826] hover:shadow-lg"
+    }
+  `}
+>
+  {pricingLoading
+    ? "Calculating..."
+    : "Proceed to Shipping"}
+
+  {!pricingLoading && (
+    <ArrowRight size={18} />
+  )}
+</button>
 
                     <button
                       onClick={onClose}

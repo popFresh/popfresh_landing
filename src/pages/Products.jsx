@@ -1,6 +1,7 @@
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { ArrowRight } from "lucide-react";
+import { toast } from "react-toastify";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { getProducts } from "../api/product.api";
@@ -83,7 +84,7 @@ export default function Products() {
             product.images.map(
               (img) => img.imageUrl
             ),
-
+            stock: product.stock,
           
           highlights: product.highlights || [],
 
@@ -192,18 +193,31 @@ theme:
     {/* Products Grid */}            {products.map((product) => (
               <Link
                 key={product.id}
-                to={`/products/${product.slug}`}
-                className="
-                  group
-                  flex
-                  flex-col
-                  overflow-hidden
-                  rounded-[32px]
-                  transition-all
-                  duration-300
-                  hover:-translate-y-2
-                  hover:shadow-[0_20px_50px_rgba(0,0,0,0.08)]
-                "
+  to={`/products/${product.slug}`}
+  onClick={(e) => {
+    if (product.stock <= 0) {
+      e.preventDefault();
+      toast.info(
+      "This product is currently out of stock."
+    );
+    }
+  }}
+
+                className={`
+  group
+  flex
+  flex-col
+  overflow-hidden
+  rounded-[32px]
+  transition-all
+  duration-300
+
+  ${
+    product.stock > 0
+      ? "hover:-translate-y-2 hover:shadow-[0_20px_50px_rgba(0,0,0,0.08)]"
+      : "cursor-not-allowed opacity-95 grayscale-[0.15]"
+  }
+`}
                 style={{
                   background: product.theme.background,
                 }}
@@ -233,17 +247,50 @@ theme:
                 {/* Image */}
 
                 <div className="px-6 pt-6">
-                  <div
-                    className="
-                      overflow-hidden
-                      rounded-[24px]
-                      bg-white/40
-                    "
-                  >
+                <div
+  className="
+    relative
+    overflow-hidden
+    rounded-[24px]
+    bg-white/40
+  "
+>
                     <ProductImageSlider
                       images={product.images}
                       title={product.title}
                     />
+                  {product.stock <= 0 && (
+
+  <div
+    className="
+      absolute
+      inset-0
+      flex
+      items-center
+      justify-center
+     bg-black/45
+backdrop-blur-none
+
+    "
+  >
+    <span
+      className="
+        rounded-full
+        bg-red-600
+        px-5
+        py-2
+        text-sm
+        font-bold
+        tracking-wide
+        text-white
+      "
+    >
+      SOLD OUT
+    </span>
+  </div>
+
+)}
+
                   </div>
                 </div>
 
@@ -314,37 +361,43 @@ theme:
                   {/* CTA */}
 
                   <button
-                    className="
-                      group
-                      mt-8
-                      w-full
-                      inline-flex
-                      items-center
-                      justify-center
-                      gap-3
-                      py-4
-                      rounded-full
-                      text-white
-                      font-semibold
-                      transition-all
-                      duration-300
-                      hover:shadow-lg
-                    "
-                    style={{
-                      background: product.theme.accent,
-                    }}
-                  >
-                    Buy Now
+  disabled={product.stock <= 0}
+  className={`
+    group
+    mt-8
+    w-full
+    inline-flex
+    items-center
+    justify-center
+    gap-3
+    py-4
+    rounded-full
+    font-semibold
+    transition-all
+    duration-300
 
-                    <ArrowRight
-                      size={18}
-                      className="
-                        transition-transform
-                        duration-300
-                        group-hover:translate-x-1
-                      "
-                    />
-                  </button>
+    ${
+      product.stock <= 0
+        ? "cursor-not-allowed pointer-events-none bg-gray-400 text-white"
+        : "text-white hover:shadow-lg"
+    }
+  `}
+  style={
+    product.stock > 0
+      ? {
+          background: product.theme.accent,
+        }
+      : {}
+  }
+>
+  {product.stock > 0
+    ? "Buy Now"
+    : "Sold out"}
+
+  {product.stock > 0 && (
+    <ArrowRight size={18} />
+  )}
+</button>
                 </div>
               </Link>
             ))}

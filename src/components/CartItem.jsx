@@ -138,27 +138,24 @@ export default function CartItem({
             </span>
 
             <button
-              onClick={() =>
-                updateQuantity(
-                  item.id,
-                  Math.min(
-                    item.quantity + 1,
-                    item.stock
-                  )
-                )
-              }
-              className="
-                w-10
-                h-10
-                flex
-                items-center
-                justify-center
-                hover:bg-[#F3F4F6]
-                transition
-              "
-            >
-              <Plus size={16} />
-            </button>
+  onClick={() =>
+    updateQuantity(
+      item.id,
+      item.quantity + 1
+    )
+  }
+  className="
+    w-10
+    h-10
+    flex
+    items-center
+    justify-center
+    hover:bg-[#F3F4F6]
+    transition
+  "
+>
+  <Plus size={16} />
+</button>
           </div>
 
           {/* Remove */}

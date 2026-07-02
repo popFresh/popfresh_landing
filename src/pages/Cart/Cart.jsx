@@ -3,7 +3,11 @@ import {
   ArrowRight,
 } from "lucide-react";
 
-import { Link } from "react-router-dom";
+import { useEffect } from "react";
+import { Link,useNavigate } from "react-router-dom";
+
+import { getProductById } from "../../api/product.api";
+import { toast } from "react-toastify";
 
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
@@ -15,16 +19,71 @@ import { useCart } from "../../context/CartContext";
 
 export default function Cart() {
   const {
-    cart,
+  cart,
 
-    subtotal,
-    shipping,
-    total,
+  pricing,
+  pricingLoading,
 
-    updateQuantity,
-    removeFromCart,
-  } = useCart();
+  updateQuantity,
+  removeFromCart,
+} = useCart();
 
+
+useEffect(() => {
+  console.log(cart);
+}, [cart]);
+
+const navigate = useNavigate();
+
+const validateCart = async () => {
+
+  for (const item of cart) {
+
+    try {
+
+      const product = await getProductById(item.id);
+
+      if (!product.isActive) {
+
+        removeFromCart(item.id);
+
+        toast.info(
+          `${product.name} has been removed from your cart because it is no longer available.`
+        );
+
+        return false;
+
+      }
+
+      if (product.stock <= 0) {
+
+        removeFromCart(item.id);
+
+        toast.info(
+          `${product.name} has been removed from your cart because it is out of stock.`
+        );
+
+        return false;
+
+      }
+
+    } catch (err) {
+
+      removeFromCart(item.id);
+
+      toast.info(
+        `${item.name} has been removed from your cart because it is no longer available.`
+      );
+
+      return false;
+
+    }
+
+  }
+
+  return true;
+
+};
   return (
     <>
       <Navbar alwaysCapsule />
@@ -237,17 +296,7 @@ export default function Cart() {
 
                 <div className="mt-8">
 
-                  <CouponBox
-                    appliedCoupon={null}
-                    discount={0}
-                    onApplyCoupon={(code) => {
-                      console.log(code);
-
-                      // Backend later
-
-                      return false;
-                    }}
-                  />
+                  <CouponBox />
 
                 </div>
 
@@ -262,28 +311,58 @@ export default function Cart() {
                     </span>
 
                     <span className="font-semibold text-[#174C35]">
-                      ₹{subtotal}
+                      ₹{pricing.subtotal}
                     </span>
 
                   </div>
 
                   <div className="flex justify-between">
 
-                    <span className="text-[#667085]">
-                      Shipping
-                    </span>
+  <span className="text-[#667085]">
+    Shipping
+  </span>
 
-                    <span className="font-semibold text-[#174C35]">
+  <span
+    className={`font-semibold ${
+      !pricingLoading && pricing.shipping === 0
+        ? "text-green-600"
+        : "text-[#174C35]"
+    }`}
+  >
+    {pricingLoading ? (
+      <div
+        className="
+          h-5
+          w-16
+          rounded
+          animate-pulse
+          bg-[#E8E2D6]
+        "
+      />
+    ) : pricing.shipping === 0 ? (
+      "FREE"
+    ) : (
+      `₹${pricing.shipping}`
+    )}
+  </span>
 
-                      {shipping === 0
-                        ? "FREE"
-                        : `₹${shipping}`}
+</div>
 
-                    </span>
+{/* Discount */}
 
-                  </div>
+{!pricingLoading && pricing.discount > 0 && (
+  <div className="flex justify-between">
+    <span className="text-[#667085]">
+      Discount
+    </span>
 
-                  <div className="border-t border-dashed border-[#E5E5E5]" />
+    <span className="font-semibold text-green-600">
+      -₹{pricing.discount}
+    </span>
+  </div>
+)}
+
+<div className="border-t border-dashed border-[#E5E5E5]" />
 
                   <div className="flex justify-between items-center">
 
@@ -297,7 +376,9 @@ export default function Cart() {
                     </span>
 
                     <span className="text-3xl font-bold text-[#174C35]">
-                      ₹{total}
+                     {pricingLoading
+  ? "Calculating..."
+  : `₹${pricing.total}`}
                     </span>
 
                   </div>
@@ -306,36 +387,44 @@ export default function Cart() {
 
                 <div className="mt-10 space-y-4">
 
-                  <Link
-                    to="/checkout/shipping"
-                    className="
-                      flex
-                      w-full
+                 <button
+  disabled={pricingLoading}
+ onClick={async () => {
 
-                      items-center
-                      justify-center
-                      gap-3
+  const valid = await validateCart();
 
-                      rounded-full
+  if (!valid) return;
 
-                      bg-[#174C35]
+  navigate("/checkout/shipping");
 
-                      py-4
+}}
+  className={`
+    flex
+    w-full
+    items-center
+    justify-center
+    gap-3
+    rounded-full
+    py-4
+    font-semibold
+    transition-all
+    duration-300
 
-                      text-white
+    ${
+      pricingLoading
+        ? "bg-gray-400 text-white cursor-not-allowed opacity-70"
+        : "bg-[#174C35] text-white hover:bg-[#123A2B]"
+    }
+  `}
+>
+  {pricingLoading
+    ? "Calculating..."
+    : "Proceed to Shipping"}
 
-                      font-semibold
-
-                      transition-all
-                      duration-300
-
-                      hover:bg-[#123A2B]
-                    "
-                  >
-                    Proceed to Shipping
-
-                    <ArrowRight size={18} />
-                  </Link>
+  {!pricingLoading && (
+    <ArrowRight size={18} />
+  )}
+</button>
 
                   <Link
                     to="/products"

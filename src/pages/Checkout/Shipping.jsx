@@ -16,18 +16,21 @@ import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 
 import { useCart } from "../../context/CartContext";
-import CartItem from "../../components/CartItem.jsx";
+
 
 export default function Shipping() {
   const navigate = useNavigate();
 
-  const {
-    cart,
-    subtotal,
-    shipping,
-    total,
-    clearCart
-  } = useCart();
+const {
+  cart,
+
+  pricing,
+  pricingLoading,
+
+  appliedCoupon,
+
+  clearCart,
+} = useCart();
 
   const [loadingPincode, setLoadingPincode] =
     useState(false);
@@ -44,36 +47,21 @@ const [availablePostOffices, setAvailablePostOffices] =
     const [paymentLoading, setPaymentLoading] =
   useState(false);
 
-  const [form, setForm] = useState(() => {
-    const saved = localStorage.getItem(
-      "popfresh-shipping"
-    );
+  const [processingPayment, setProcessingPayment] =
+  useState(false);
 
-    return saved
-      ? JSON.parse(saved)
-      : {
+  const [form, setForm] = useState({
   fullName: "",
   phone: "",
   email: "",
   address: "",
   landmark: "",
-
   postOffice: "",
   district: "",
-
   city: "",
   state: "",
-
   pincode: "",
-}
-  });
-
-  useEffect(() => {
-    localStorage.setItem(
-      "popfresh-shipping",
-      JSON.stringify(form)
-    );
-  }, [form]);
+});
 
   const validatePhone = (value) => {
     return /^[6-9]\d{9}$/.test(value);
@@ -150,11 +138,41 @@ setForm((prev) => ({
         .slice(0, 10);
     }
 
-    if (name === "pincode") {
-      newValue = value
-        .replace(/\D/g, "")
-        .slice(0, 6);
-    }
+   if (name === "pincode") {
+
+  newValue = value
+    .replace(/\D/g, "")
+    .slice(0, 6);
+
+  if (newValue.length < 6) {
+
+    setAvailablePostOffices([]);
+
+    setDeliveryAvailable(false);
+
+    setPincodeError("");
+
+    setForm(prev => ({
+
+      ...prev,
+
+      pincode: newValue,
+
+      postOffice: "",
+
+      district: "",
+
+      city: "",
+
+      state: "",
+
+    }));
+
+    return;
+
+  }
+
+}
 
     setForm((prev) => ({
       ...prev,
@@ -259,20 +277,15 @@ const handlePayment = async () => {
   // -----------------------------
 let order;
 try{
+    
 
     order = await createOrder({
-
-  amount: total,
 
   currency: "INR",
 
   cartItems: cart,
 
-  subtotal,
-
-  shippingCharge: shipping,
-
-  total,
+  couponCode: appliedCoupon,
 
 });
 
@@ -307,13 +320,13 @@ catch (err) {
       import.meta.env.VITE_RAZORPAY_KEY_ID,
 
     amount:
-      order.amount,
+      order.razorpayOrder.amount,
 
     currency:
-      order.currency,
+      order.razorpayOrder.currency,
 
     order_id:
-      order.id,
+      order.razorpayOrder.id,
 
     name:
       "POPFRESH",
@@ -379,58 +392,60 @@ handler: async (response) => {
 
   address: {
 
-    fullName: form.fullName,
+  fullName: form.fullName,
 
-    phone: form.phone,
+  phone: form.phone,
 
-    addressLine1: form.address,
+  addressLine1: form.address,
 
-    addressLine2: form.address2 || "",
+  addressLine2: form.address2 || "",
 
-    city: form.city,
+  landmark: form.landmark || "",
 
-    state: form.state,
+  postOffice: form.postOffice,
 
-    pincode: form.pincode,
+  district: form.district,
 
-    landmark: form.landmark || "",
+  city: form.city,
 
-  },
+  state: form.state,
+
+  pincode: form.pincode,
+
+},
 
   cartItems: cart,
 
-  subtotal,
-
-  shippingCharge: shipping,
-
-  total,
+  couponCode: appliedCoupon,
 
 };
 
-try{
-    const result = await verifyPayment(payload);
-    setPaymentLoading(false);
-    clearCart();
-    navigate("/order-success", {
+setProcessingPayment(true);
 
-      state: result,
+try {
 
-      replace: true,
+  const result = await verifyPayment(payload);
 
-    });
+  setPaymentLoading(false);
 
+  clearCart();
 
-}catch (err) {
+  navigate("/order-success", {
+    state: result,
+    replace: true,
+  });
 
-    setPaymentLoading(false);
-    console.error(err);
-    toast.error(
+} catch (err) {
 
-      err.response?.data?.message ||
+  setProcessingPayment(false);
+  setPaymentLoading(false);
 
-      "Payment verification failed."
+  console.error(err);
 
-    );
+  toast.error(
+    err.response?.data?.message ||
+    "Payment verification failed."
+  );
 
 }
 
@@ -441,7 +456,7 @@ try{
     modal: {
 
       ondismiss() {
-
+        setProcessingPayment(false)
         setPaymentLoading(false);
 
         console.log(
@@ -472,38 +487,38 @@ try{
 
 
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+//   const handleSubmit = (e) => {
+//     e.preventDefault();
 
-    if (!validatePhone(form.phone)) {
-      alert(
-        "Please enter a valid 10-digit phone number."
-      );
+//     if (!validatePhone(form.phone)) {
+//       alert(
+//         "Please enter a valid 10-digit phone number."
+//       );
 
-      return;
-    }
+//       return;
+//     }
 
-    if (!validateEmail(form.email)) {
-      alert(
-        "Please enter a valid email."
-      );
+//     if (!validateEmail(form.email)) {
+//       alert(
+//         "Please enter a valid email."
+//       );
 
-      return;
-    }
+//       return;
+//     }
 
-    if (
-      form.pincode.length !== 6 ||
-      !deliveryAvailable
-    ) {
-      alert(
-        "Please enter a valid pincode."
-      );
+//     if (
+//       form.pincode.length !== 6 ||
+//       !deliveryAvailable
+//     ) {
+//       alert(
+//         "Please enter a valid pincode."
+//       );
 
-      return;
-    }
+//       return;
+//     }
 
-    navigate("/checkout/payment");
-  };
+//     navigate("/checkout/payment");
+//   };
   return (
   <>
     <Navbar alwaysCapsule />
@@ -608,7 +623,7 @@ try{
             "
           >
                         <form
-              onSubmit={handleSubmit}
+              
               className="space-y-8"
             >
               {/* Personal Details */}
@@ -646,7 +661,7 @@ try{
                     value={form.fullName}
                     onChange={handleChange}
                     required
-                    placeholder="Mohit Agarwal"
+                    placeholder="Enter your name"
                     className="
                       w-full
 
@@ -685,7 +700,7 @@ try{
                     name="phone"
                     value={form.phone}
                     onChange={handleChange}
-                    placeholder="9876543210"
+                    placeholder="Enter your phone"
                     required
                     className="
                       w-full
@@ -870,6 +885,115 @@ try{
                 />
                               </div>
 
+{/* Pincode */}
+
+              <div>
+
+                <label className="block mb-2 font-medium text-[#174C35]">
+                  Pincode
+                </label>
+
+                <div className="relative">
+
+                  <MapPin
+                    size={18}
+                    className="
+                      absolute
+                      left-5
+                      top-1/2
+                      -translate-y-1/2
+                      text-[#8B8B8B]
+                    "
+                  />
+
+                  <input
+                    type="text"
+                    name="pincode"
+                    value={form.pincode}
+                    onChange={handleChange}
+                    placeholder="Enter 6 digit pincode"
+                    required
+                    className="
+                      w-full
+
+                      rounded-2xl
+
+                      border
+                      border-[#D9D5CC]
+
+                      bg-[#FCFBF8]
+
+                      pl-14
+                      pr-5
+                      py-4
+
+                      outline-none
+
+                      transition-all
+
+                      focus:border-[#174C35]
+                      focus:ring-4
+                      focus:ring-[#174C35]/10
+                    "
+                  />
+
+                </div>
+
+                {/* Loading */}
+
+                {loadingPincode && (
+
+                  <p className="mt-3 text-[#667085] text-sm">
+                    Checking delivery availability...
+                  </p>
+
+                )}
+
+                {/* Success */}
+
+                {deliveryAvailable && (
+
+                  <div
+                    className="
+                      mt-3
+
+                      inline-flex
+
+                      items-center
+
+                      gap-2
+
+                      rounded-full
+
+                      bg-green-50
+
+                      px-4
+                      py-2
+
+                      text-sm
+
+                      text-green-700
+                    "
+                  >
+                    <CheckCircle2 size={16} />
+
+                    Delivery Available
+                  </div>
+
+                )}
+
+                {/* Error */}
+
+                {pincodeError && (
+
+                  <p className="mt-3 text-red-500 text-sm">
+                    {pincodeError}
+                  </p>
+
+                )}
+
+              </div>
+
               {/* City + State */}
                   {/* post office  */}
                   <div>
@@ -903,6 +1027,29 @@ Post Office
       focus:ring-4
       focus:ring-[#174C35]/10
     "
+    value={form.postOffice}
+
+onChange={(e) => {
+
+  const office =
+    availablePostOffices.find(
+      (item) => item.Name === e.target.value
+    );
+
+  setForm((prev) => ({
+    ...prev,
+
+    postOffice: office.Name,
+
+    district: office.District,
+
+    city: office.Block || office.District,
+
+    state: office.State,
+
+  }));
+
+}}
   >
 
 {availablePostOffices.map((office)=>(
@@ -1045,114 +1192,7 @@ District
 
               </div>
 
-              {/* Pincode */}
-
-              <div>
-
-                <label className="block mb-2 font-medium text-[#174C35]">
-                  Pincode
-                </label>
-
-                <div className="relative">
-
-                  <MapPin
-                    size={18}
-                    className="
-                      absolute
-                      left-5
-                      top-1/2
-                      -translate-y-1/2
-                      text-[#8B8B8B]
-                    "
-                  />
-
-                  <input
-                    type="text"
-                    name="pincode"
-                    value={form.pincode}
-                    onChange={handleChange}
-                    placeholder="Enter 6 digit pincode"
-                    required
-                    className="
-                      w-full
-
-                      rounded-2xl
-
-                      border
-                      border-[#D9D5CC]
-
-                      bg-[#FCFBF8]
-
-                      pl-14
-                      pr-5
-                      py-4
-
-                      outline-none
-
-                      transition-all
-
-                      focus:border-[#174C35]
-                      focus:ring-4
-                      focus:ring-[#174C35]/10
-                    "
-                  />
-
-                </div>
-
-                {/* Loading */}
-
-                {loadingPincode && (
-
-                  <p className="mt-3 text-[#667085] text-sm">
-                    Checking delivery availability...
-                  </p>
-
-                )}
-
-                {/* Success */}
-
-                {deliveryAvailable && (
-
-                  <div
-                    className="
-                      mt-3
-
-                      inline-flex
-
-                      items-center
-
-                      gap-2
-
-                      rounded-full
-
-                      bg-green-50
-
-                      px-4
-                      py-2
-
-                      text-sm
-
-                      text-green-700
-                    "
-                  >
-                    <CheckCircle2 size={16} />
-
-                    Delivery Available
-                  </div>
-
-                )}
-
-                {/* Error */}
-
-                {pincodeError && (
-
-                  <p className="mt-3 text-red-500 text-sm">
-                    {pincodeError}
-                  </p>
-
-                )}
-
-              </div>
+              
 
             </form>
 
@@ -1258,8 +1298,8 @@ District
                     "
                   >
                     <img
-                      src={item.images[0]}
-                      alt={item.title}
+                      src={item.images?.[0] || "/placeholder.png"}
+                      alt={item.name}
                       className="
                         h-12
                         w-12
@@ -1282,7 +1322,7 @@ District
                   </div>
 
                   <span className="font-semibold text-[#174C35]">
-                    ₹{item.sellingPrice * item.quantity}
+                    ₹{Number(item.sellingPrice) * item.quantity}
                   </span>
 
                 </div>
@@ -1306,27 +1346,46 @@ District
                 </span>
 
                 <span className="font-semibold text-[#174C35]">
-                  ₹{subtotal}
+                  ₹{pricing.subtotal}
                 </span>
 
               </div>
 
-              <div className="flex justify-between">
+      <div className="flex justify-between">
+  <span className="text-[#667085]">
+    Shipping
+  </span>
 
-                <span className="text-[#667085]">
-                  Shipping
-                </span>
+  <span
+    className={`font-semibold ${
+      !pricingLoading && pricing.shipping === 0
+        ? "text-green-600"
+        : "text-[#174C35]"
+    }`}
+  >
+    {pricingLoading
+      ? "Calculating..."
+      : pricing.shipping === 0
+      ? "FREE"
+      : `₹${pricing.shipping}`}
+  </span>
+</div>
 
-                <span className="font-semibold text-[#174C35]">
+{!pricingLoading && pricing.discount > 0 && (
 
-                  {shipping === 0
-                    ? "FREE"
-                    : `₹${shipping}`}
+<div className="flex justify-between">
 
-                </span>
+  <span className="text-[#667085]">
+    Discount
+  </span>
 
-              </div>
+  <span className="font-semibold text-green-600">
+    -₹{pricing.discount}
+  </span>
 
+</div>
+
+)}
               <div className="border-t border-[#ECE7DB] pt-5">
 
                 <div className="flex justify-between items-center">
@@ -1340,10 +1399,27 @@ District
                     Total
                   </span>
 
-                  <span className="text-3xl font-bold text-[#174C35]">
-                    ₹{total}
-                  </span>
+                 <span className="text-3xl font-bold text-[#174C35]">
 
+  {pricingLoading ? (
+
+    <div
+      className="
+        h-8
+        w-24
+        rounded
+        animate-pulse
+        bg-[#E8E2D6]
+      "
+    />
+
+  ) : (
+
+    `₹${pricing.total}`
+
+  )}
+
+</span>
                 </div>
 
               </div>
@@ -1428,7 +1504,7 @@ District
 
               <button
                 type="button"
-                disabled={paymentLoading}
+                disabled={paymentLoading || pricingLoading}
                 //onClick={handleSubmit}
                 onClick={handlePayment}
                 className={`
@@ -1451,11 +1527,11 @@ District
 
                   transition-all
                   duration-300
-                  ${
-    paymentLoading
-      ? "bg-[#174C35]/70 cursor-not-allowed"
-      : "bg-[#174C35] hover:bg-[#123A2B]"
-  }
+                 ${
+  paymentLoading || pricingLoading
+    ? "bg-[#174C35]/70 cursor-not-allowed"
+    : "bg-[#174C35] hover:bg-[#123A2B]"
+}
 `}
 
                   
@@ -1477,7 +1553,7 @@ District
       "
     />
 
-    Processing...
+    Processing Payment ...
 
   </>
 
@@ -1507,6 +1583,58 @@ District
     </main>
 
     <Footer />
+
+    {processingPayment && (
+  <div
+    className="
+      fixed
+      inset-0
+      z-[9999]
+      bg-black/50
+      backdrop-blur-sm
+      flex
+      items-center
+      justify-center
+    "
+  >
+    <div
+      className="
+        w-[360px]
+        rounded-3xl
+        bg-white
+        p-10
+        text-center
+        shadow-2xl
+      "
+    >
+      <div
+        className="
+          mx-auto
+          h-14
+          w-14
+          rounded-full
+          border-4
+          border-[#DDE8E2]
+          border-t-[#174C35]
+          animate-spin
+        "
+      />
+
+      <h3
+        className="mt-6 text-2xl text-[#174C35]"
+        style={{ fontFamily: "Fraunces, serif" }}
+      >
+        Processing Payment
+      </h3>
+
+      <p className="mt-3 text-[#667085] leading-7">
+        Please don't close this window.
+        <br />
+        We're confirming your payment and creating your order.
+      </p>
+    </div>
+  </div>
+)}
 
   </>
 );
