@@ -18,7 +18,7 @@ export const getProductBySlug = async (slug) => {
 
 export const getProductById = async (id) => {
 
-  const { data } = await api.get(`/products/public/${id}`);
+  const { data } = await api.get(`/products/${id}`);
 
   return data.data;
 
