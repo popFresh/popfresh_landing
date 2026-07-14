@@ -17,6 +17,9 @@ import Cart from "./pages/Cart/Cart";
 import Shipping from "./pages/Checkout/Shipping";
 import FloatingCartButton from "./components/FloatingCartButton";
 import OrderSuccess from "./pages/Checkout/Success";
+import TrackOrder from "./pages/TrackOrder";
+import ShareFeedback from "./pages/ShareFeedback";
+import { Share } from "lucide-react";
 
   export default function App() {
   return (
@@ -37,6 +40,11 @@ import OrderSuccess from "./pages/Checkout/Success";
         <Route path="/about" element={<About />} />
 
         <Route path="/contact" element={<Contact />} />
+
+        <Route path="/track-order" element={<TrackOrder />} />
+
+        <Route path="/share-feedback" element={<ShareFeedback />} />
+
 
         <Route
           path="/return-refund-policy"

@@ -1,10 +1,29 @@
-import React from "react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { Mail, Phone } from "lucide-react";
 import { FaInstagram } from "react-icons/fa";
 import logo from "../assets/pop_logo_color_new2.png";
 
 const Footer = () => {
+
+  const navigate = useNavigate();
+
+const [trackingQuery, setTrackingQuery] = useState("");
+
+const handleTrackOrder = () => {
+  const value = trackingQuery.trim();
+
+  if (!value) {
+    navigate("/track-order");
+    return;
+  }
+
+  navigate(
+    `/track-order?query=${encodeURIComponent(value)}`
+  );
+};
+
   return (
     <footer className="bg-[#032F23] text-[#F5F1E8] pt-24 pb-10 px-6 md:px-12 border-t border-[#D4B56A]/15">
       <div className="max-w-7xl mx-auto grid md:grid-cols-[1.5fr_1fr_1fr_1.2fr] gap-14">
@@ -161,47 +180,61 @@ const Footer = () => {
           </ul>
         </div>
 
-        {/* Newsletter */}
+        {/* Track Order */}
 
-        <div>
-          <h3 className="text-[#D4B56A] text-xs tracking-[0.3em] mb-6">
-            STAY UPDATED
-          </h3>
+<div>
+  <h3 className="text-[#D4B56A] text-xs tracking-[0.3em] mb-6">
+    TRACK YOUR ORDER
+  </h3>
 
-          <p className="text-[#B8C1B8] mb-5 leading-7">
-            Get offers, new flavour launches and healthy snacking tips.
-          </p>
+  <p className="text-[#B8C1B8] mb-5 leading-7">
+    Enter your phone, email address or order number to track your order.
+  </p>
 
-          <div className="flex overflow-hidden rounded-full border border-[#D4B56A]/25">
-            <input
-              type="email"
-              placeholder="Enter your email"
-              className="
-                flex-1
-                bg-transparent
-                px-5
-                py-4
-                outline-none
-                text-sm
-                placeholder:text-[#B8C1B8]
-              "
-            />
+  <div className="flex overflow-hidden rounded-full border border-[#D4B56A]/25">
 
-            <button
-              className="
-                px-6
-                bg-[#D4B56A]
-                text-[#032F23]
-                font-semibold
-                text-sm
-                transition-all duration-300
-                hover:bg-[#E3C57D]
-              "
-            >
-              JOIN
-            </button>
-          </div>
-        </div>
+    <input
+      type="text"
+      value={trackingQuery}
+      onChange={(e) =>
+        setTrackingQuery(e.target.value)
+      }
+      placeholder="Search Order"
+      className="
+        flex-1
+        bg-transparent
+        px-5
+        py-4
+        outline-none
+        text-sm
+        placeholder:text-[#B8C1B8]
+        
+      "
+      onKeyDown={(e) => {
+        if (e.key === "Enter") {
+          handleTrackOrder();
+        }
+      }}
+    />
+
+    <button
+      onClick={handleTrackOrder}
+      className="
+        px-5
+        bg-[#D4B56A]
+        text-[#032F23]
+        font-semibold
+        text-sm
+        transition-all
+        duration-300
+        hover:bg-[#E3C57D]
+      "
+    >
+      TRACK
+    </button>
+
+  </div>
+</div>
       </div>
 
       {/* Bottom Bar */}
