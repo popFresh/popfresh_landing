@@ -308,7 +308,7 @@ catch (err) {
 
 }
 
-  console.log(order);
+  // console.log(order);
 
   // -----------------------------
   // Razorpay Checkout
@@ -459,9 +459,9 @@ try {
         setProcessingPayment(false)
         setPaymentLoading(false);
 
-        console.log(
-          "Payment Cancelled"
-        );
+        // console.log(
+        //   "Payment Cancelled"
+        // );
 
       },
 

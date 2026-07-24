@@ -21,8 +21,24 @@ export default function Contact() {
     }));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  try {
+    const response = await fetch(
+      `${import.meta.env.VITE_API_URL}/contact`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error("Failed to send message");
+    }
 
     setSubmitted(true);
 
@@ -36,7 +52,11 @@ export default function Contact() {
     setTimeout(() => {
       setSubmitted(false);
     }, 5000);
-  };
+  } catch (error) {
+    console.error(error);
+    alert("Something went wrong. Please try again.");
+  }
+};
 
   return (
     <>
@@ -83,7 +103,7 @@ export default function Contact() {
                 <div>
                   <p className="text-[#667085]">Email</p>
                   <p className="font-medium">
-                    info@popfresh.in
+                    hello@popfresh.in
                   </p>
                 </div>
 

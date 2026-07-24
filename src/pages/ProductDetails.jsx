@@ -149,7 +149,7 @@ const related = allProducts
 
 setRelatedProducts(related);
 
-    console.log(data);
+    // console.log(data);
 
   } catch (err) {
 

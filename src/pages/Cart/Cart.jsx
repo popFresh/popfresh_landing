@@ -30,7 +30,7 @@ export default function Cart() {
 
 
 useEffect(() => {
-  console.log(cart);
+  // console.log(cart);
 }, [cart]);
 
 const navigate = useNavigate();

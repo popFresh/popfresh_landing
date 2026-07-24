@@ -184,11 +184,7 @@ export default function InstagramCTA() {
                 sm:text-sm
               "
             >
-              <span>New Launches</span>
-              <span>•</span>
-              <span>Healthy Snacking</span>
-              <span>•</span>
-              <span>Community</span>
+              
             </div>
 
             {/* Instagram CTA */}

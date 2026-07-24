@@ -117,7 +117,7 @@ export function CartProvider({ children }) {
 
         return data;
       } catch (err) {
-        console.error(err);
+        // console.error(err);
 
         
 
