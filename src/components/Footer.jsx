@@ -64,7 +64,7 @@ const handleTrackOrder = () => {
             </a>
 
             <a
-              href="mailto:info@popfresh.in"
+              href="mailto:hello@popfresh.in"
               className="
                 w-11 h-11
                 flex items-center justify-center
@@ -115,21 +115,30 @@ const handleTrackOrder = () => {
             </li>
 
             <li>
-              <a href="#" className="hover:text-white transition-colors">
+             <Link
+                to="/products"
+                className="hover:text-white transition-colors"
+              >
                 Best Sellers
-              </a>
+              </Link>
             </li>
 
             <li>
-              <a href="#" className="hover:text-white transition-colors">
+              <Link
+                to="/build-your-combo"
+                className="hover:text-white transition-colors"
+              >
                 Combo Packs
-              </a>
+              </Link>
             </li>
 
             <li>
-              <a href="#" className="hover:text-white transition-colors">
-                Gift Boxes
-              </a>
+              <Link
+                to="/contact"
+                className="hover:text-white transition-colors"
+              >
+                Corporate Gifting
+              </Link>
             </li>
           </ul>
         </div>

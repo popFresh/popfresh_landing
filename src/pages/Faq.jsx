@@ -108,7 +108,7 @@ answer:
 {
 question: "How do I report a damaged or incorrect product?",
 answer:
-"Please contact us within 24 hours of delivery at [support@popfresh.in](mailto:support@popfresh.in) with your Order Number, Contact Details, photographs of the product and packaging, and a brief description of the issue.",
+"Please contact us within 24 hours of delivery at [hello@popfresh.in](mailto:hello@popfresh.in) with your Order Number, Contact Details, photographs of the product and packaging, and a brief description of the issue.",
 },
 {
 question: "How long does it take to receive a refund?",
@@ -129,7 +129,7 @@ answer:
 {
 question: "How can I contact POPFRESH?",
 answer:
-"For any questions or assistance, please contact POPFRESH Customer Support at [support@popfresh.in](mailto:support@popfresh.in) or call +91 7353129759.",
+"For any questions or assistance, please contact POPFRESH Customer Support at [hello@popfresh.in](mailto:hello@popfresh.in) or call +91 7353129759.",
 },
 ],
 },

@@ -19,6 +19,7 @@ import FloatingCartButton from "./components/FloatingCartButton";
 import OrderSuccess from "./pages/Checkout/Success";
 import TrackOrder from "./pages/TrackOrder";
 import ShareFeedback from "./pages/ShareFeedback";
+import BuildYourCombo from "./pages/BuildYourCombo";
 import { Share } from "lucide-react";
 
   export default function App() {
@@ -30,6 +31,11 @@ import { Share } from "lucide-react";
         <Route path="/" element={<Home />} />
 
         <Route path="/products" element={<Products />} />
+
+        <Route
+  path="/build-your-combo"
+  element={<BuildYourCombo />}
+/>
 
         <Route path="/products/:slug" element={<ProductDetails />} />
 
